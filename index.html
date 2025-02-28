@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>数字猜谜游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            margin-top: 50px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .input-box {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .input-box:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        .history {
+            margin-top: 20px;
+            min-height: 100px;
+            width: 300px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h2>猜数字游戏（4位不重复数字）</h2>
+        <div class="input-group">
+            <input type="number" class="input-box" maxlength="1" data-index="0">
+            <input type="number" class="input-box" maxlength="1" data-index="1">
+            <input type="number" class="input-box" maxlength="1" data-index="2">
+            <input type="number" class="input-box" maxlength="1" data-index="3">
+        </div>
+        <button onclick="checkAnswer()">提交答案</button>
+        <div class="history" id="history"></div>
+    </div>
+
+    <script>
+        let targetNumber = generateUniqueNumber();
+        
+        // 生成不重复的四位数‌:ml-citation{ref="1,4" data="citationList"}
+        function generateUniqueNumber() {
+            let digits = [];
+            while(digits.length < 4) {
+                const digit = Math.floor(Math.random() * 10);
+                if(!digits.includes(digit)) digits.push(digit);
+            }
+            return digits.join('');
+        }
+
+        // 输入验证‌:ml-citation{ref="2,5" data="citationList"}
+        document.querySelectorAll('.input-box').forEach((input, index) => {
+            input.addEventListener('input', function(e) {
+                // 限制输入范围
+                if(this.value.length > 1) this.value = this.value.slice(0,1);
+                if(this.value < 0) this.value = 0;
+                if(this.value > 9) this.value = 9;
+                
+                // 自动聚焦下一个输入框
+                if(this.value !== '' && index < 3) {
+                    document.querySelector(`[data-index="${index + 1}"]`).focus();
+                }
+            });
+        });
+
+        // 检查答案‌:ml-citation{ref="3,6" data="citationList"}
+        function checkAnswer() {
+            const inputs = document.querySelectorAll('.input-box');
+            const userInput = Array.from(inputs).map(input => input.value).join('');
+            
+            // 输入验证
+            if(new Set(userInput).size !== 4 || userInput.length !== 4) {
+                alert('请输入4位不重复的数字！');
+                return;
+            }
+
+            let a = 0, b = 0;
+            const targetArr = targetNumber.split('');
+            const inputArr = userInput.split('');
+
+            // 计算A和B的数量
+            inputArr.forEach((num, i) => {
+                if(num === targetArr[i]) {
+                    a++;
+                } else if(targetArr.includes(num)) {
+                    b++;
+                }
+            });
+
+            // 记录历史‌:ml-citation{ref="4,5" data="citationList"}
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML += `<div>${userInput} → ${a}A${b}B</div>`;
+            
+            if(a === 4) {
+                setTimeout(() => {
+                    alert('恭喜你猜对了！🎉');
+                    targetNumber = generateUniqueNumber();
+                    historyDiv.innerHTML = '';
+                    inputs.forEach(input => input.value = '');
+                }, 100);
+            }
+            
+            // 清空输入框
+            inputs.forEach(input => input.value = '');
+            inputs.focus();
+        }
+    </script>
+</body>
+</html>
